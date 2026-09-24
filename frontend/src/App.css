@@ -10,79 +10,468 @@ body {
   min-height: 100vh;
 }
 
-.app {
+/* ================= LOGIN ================= */
+
+.login-page {
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  text-align: center;
 }
 
-h1 {
-  color: white;
-  font-size: 36px;
+.login-card {
+  background: white;
+  width: 100%;
+  max-width: 400px;
+  padding: 40px 28px;
+  border-radius: 24px;
+  text-align: center;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+}
+
+.login-music-icon {
+  font-size: 50px;
   margin-bottom: 10px;
 }
 
-.subtitle {
-  color: white;
-  font-size: 17px;
-  margin-bottom: 30px;
-}
-
-.card {
-  background: white;
-  width: 100%;
-  max-width: 450px;
-  padding: 35px 25px;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-.card h2 {
+.login-card h1 {
   color: #333;
+  font-size: 20px;
   margin-bottom: 25px;
 }
 
-input[type="file"] {
-  width: 100%;
-  padding: 12px;
-  border: 2px dashed #667eea;
-  border-radius: 10px;
-  margin-bottom: 20px;
+.login-card h2 {
+  color: #667eea;
+  font-size: 24px;
+  margin-bottom: 22px;
 }
 
-button {
+.login-card input {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 15px;
+  outline: none;
+}
+
+.login-card input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 8px rgba(102, 126, 234, 0.25);
+}
+
+.login-btn {
   width: 100%;
   padding: 14px;
   border: none;
-  border-radius: 10px;
-  background: #667eea;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
   color: white;
   font-size: 17px;
   font-weight: bold;
   cursor: pointer;
 }
 
-button:hover {
-  background: #5568d9;
+/* ================= MAIN APP ================= */
+
+.app {
+  min-height: 100vh;
+  padding: 70px 20px 40px;
+  text-align: center;
 }
+
+.header h1 {
+  color: white;
+  font-size: 25px;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  color: white;
+  font-size: 16px;
+  margin-bottom: 30px;
+}
+
+/* Logout */
+
+.logout-btn {
+  width: auto;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 10px 15px;
+  font-size: 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.4);
+}
+
+/* ================= MAIN CARD ================= */
+
+.card {
+  background: white;
+  width: 100%;
+  max-width: 500px;
+  margin: auto;
+  padding: 35px 25px;
+  border-radius: 24px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+  text-align: left;
+}
+
+.card h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 25px;
+}
+
+.card label {
+  display: block;
+  color: #333;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+/* ================= FILE UPLOAD ================= */
+
+input[type="file"] {
+  width: 100%;
+  padding: 14px;
+  border: 2px dashed #667eea;
+  border-radius: 12px;
+  margin-bottom: 18px;
+  background: #f8f9ff;
+}
+
+/* ================= SONG INFO ================= */
+
+.song-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f1f3ff;
+  padding: 14px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+}
+
+.song-icon {
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #667eea;
+  border-radius: 50%;
+  font-size: 22px;
+}
+
+.song-details {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow: hidden;
+}
+
+.song-details strong {
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.song-details span {
+  color: #777;
+  font-size: 13px;
+}
+
+/* ================= MUSIC PLAYER ================= */
+
+.music-player {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 15px;
+  margin-bottom: 25px;
+  color: white;
+}
+
+.play-btn {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  padding: 0;
+  border-radius: 50%;
+  background: white;
+  color: #667eea;
+  font-size: 20px;
+}
+
+.player-content {
+  width: 100%;
+}
+
+.player-title {
+  font-size: 14px;
+  margin-bottom: 9px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress {
+  height: 100%;
+  width: 15%;
+  background: white;
+  border-radius: 10px;
+}
+
+.progress.playing {
+  animation: musicProgress 5s linear infinite;
+}
+
+@keyframes musicProgress {
+  from {
+    width: 10%;
+  }
+
+  to {
+    width: 95%;
+  }
+}
+
+/* ================= LYRICS ================= */
+
+textarea {
+  width: 100%;
+  padding: 14px;
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  margin-bottom: 5px;
+  font-size: 15px;
+  resize: vertical;
+  outline: none;
+  font-family: Arial, sans-serif;
+}
+
+textarea:focus {
+  border-color: #667eea;
+}
+
+.lyrics-count {
+  text-align: right;
+  color: #888;
+  font-size: 12px;
+  margin-bottom: 18px;
+}
+
+/* ================= PREDICT BUTTON ================= */
+
+.predict-btn {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.predict-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.35);
+}
+
+/* ================= RESULT ================= */
 
 .result {
   margin-top: 25px;
-  padding: 20px;
-  border-radius: 15px;
-  background: #f1f3ff;
+  padding: 25px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #f1f3ff, #ffffff);
+  text-align: center;
+  border: 2px solid #e4e7ff;
+}
+
+.result-icon {
+  font-size: 55px;
+  margin-bottom: 10px;
 }
 
 .result h2 {
   margin-bottom: 10px;
 }
 
-.result p {
+.mood-name {
   font-size: 28px;
   font-weight: bold;
   color: #667eea;
+  margin-bottom: 20px;
+}
+
+/* Confidence */
+
+.confidence-section {
+  text-align: left;
+  margin-bottom: 18px;
+}
+
+.confidence-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  color: #444;
+}
+
+.confidence-top strong {
+  color: #667eea;
+}
+
+.confidence-bar {
+  width: 100%;
+  height: 10px;
+  background: #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.confidence-fill {
+  width: 87%;
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 10px;
+  animation: confidenceAnimation 1s ease;
+}
+
+@keyframes confidenceAnimation {
+  from {
+    width: 0;
+  }
+
+  to {
+    width: 87%;
+  }
+}
+
+.mood-message {
+  color: #555;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* ================= SUPPORTED MOODS ================= */
+
+.supported-section {
+  max-width: 700px;
+  margin: 30px auto;
+}
+
+.supported-section h2 {
+  color: white;
+  margin-bottom: 15px;
+  font-size: 20px;
+}
+
+.mood-list {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.mood-list span {
+  background: rgba(255,255,255,0.18);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+/* ================= HISTORY ================= */
+
+.history-card {
+  width: 100%;
+  max-width: 500px;
+  margin: 20px auto;
+  background: white;
+  padding: 25px;
+  border-radius: 20px;
+  text-align: left;
+}
+
+.history-card h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 13px;
+  border-bottom: 1px solid #eee;
+}
+
+.history-item strong {
+  color: #667eea;
+}
+
+.history-item p {
+  color: #777;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.history-item span {
+  color: #999;
+  font-size: 12px;
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width: 600px) {
+
+  .app {
+    padding: 70px 12px 30px;
+  }
+
+  .header h1 {
+    font-size: 22px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+  }
+
+  .card {
+    padding: 25px 18px;
+  }
+
+  .logout-btn {
+    top: 15px;
+    right: 15px;
+  }
+
+  .result-icon {
+    font-size: 48px;
+  }
+
+  .mood-name {
+    font-size: 25px;
+  }
+
 }

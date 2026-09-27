@@ -17,6 +17,8 @@ function Dashboard({ onLogout }) {
   const [feedback, setFeedback] = useState("");
   const [feedbackMessage, setFeedbackMessage] = useState("");
 
+  const [loading, setLoading] = useState(false);
+
   const handleUpload = (event) => {
     const file = event.target.files[0];
 
@@ -28,15 +30,46 @@ function Dashboard({ onLogout }) {
     }
   };
 
-  const handleAnalyzeMusic = () => {
+  const handleAnalyzeMusic = async () => {
     if (!songName) {
       alert("Please upload music first.");
       return;
     }
 
-    setMood("😊 Happy");
-    setConfidence("94%");
-    setIntensity("High");
+    setLoading(true);
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/predict");
+
+      if (!response.ok) {
+        throw new Error("Backend error");
+      }
+
+      const data = await response.json();
+
+      if (data.mood === "Happy") {
+        setMood("😊 Happy");
+      } else if (data.mood === "Sad") {
+        setMood("😢 Sad");
+      } else if (data.mood === "Calm") {
+        setMood("😌 Calm");
+      } else if (data.mood === "Energetic") {
+        setMood("⚡ Energetic");
+      } else if (data.mood === "Angry") {
+        setMood("😡 Angry");
+      } else {
+        setMood(data.mood);
+      }
+
+      setConfidence(`${data.confidence}%`);
+      setIntensity(data.intensity);
+
+    } catch (error) {
+      console.error(error);
+      alert("Cannot connect to FastAPI backend.");
+    }
+
+    setLoading(false);
   };
 
   const handleAnalyzeLyrics = () => {
@@ -96,7 +129,10 @@ function Dashboard({ onLogout }) {
       return;
     }
 
-    setFeedbackMessage("✅ Thank you! Your feedback has been submitted.");
+    setFeedbackMessage(
+      "✅ Thank you! Your feedback has been submitted."
+    );
+
     setFeedback("");
     setRating(0);
   };
@@ -154,22 +190,27 @@ function Dashboard({ onLogout }) {
 
               <div className="feature-card">
                 <h3>😊 Mood Detection</h3>
+
                 <p>
                   Identifies the overall emotional mood of your music.
                 </p>
+
                 <strong>{mood}</strong>
               </div>
 
               <div className="feature-card">
                 <h3>🎯 Confidence Score</h3>
+
                 <p>
                   Shows how confident the AI model is in its prediction.
                 </p>
+
                 <strong>{confidence}</strong>
               </div>
 
               <div className="feature-card">
                 <h3>📈 Mood Timeline</h3>
+
                 <p>
                   Shows how the emotional mood changes throughout the song.
                 </p>
@@ -177,25 +218,31 @@ function Dashboard({ onLogout }) {
 
               <div className="feature-card">
                 <h3>🔄 Mood Transition</h3>
+
                 <p>
                   Displays changes between different moods during the song.
                 </p>
+
                 <strong>Happy → Calm → Energetic</strong>
               </div>
 
               <div className="feature-card">
                 <h3>🎯 Mood Intensity</h3>
+
                 <p>
                   Measures whether the detected mood is Low, Medium or High.
                 </p>
+
                 <strong>{intensity}</strong>
               </div>
 
               <div className="feature-card">
                 <h3>🎵 Song Information</h3>
+
                 <p>
                   Displays basic information about the uploaded music file.
                 </p>
+
                 <strong>
                   {songName || "No song selected"}
                 </strong>
@@ -203,6 +250,7 @@ function Dashboard({ onLogout }) {
 
               <div className="feature-card">
                 <h3>🎼 Audio Analysis</h3>
+
                 <p>
                   Analyzes audio characteristics such as energy and tempo.
                 </p>
@@ -210,9 +258,11 @@ function Dashboard({ onLogout }) {
 
               <div className="feature-card">
                 <h3>⚖️ Mood Summary</h3>
+
                 <p>
                   Provides a short summary of the complete mood analysis.
                 </p>
+
                 <strong>
                   {mood === "Waiting"
                     ? "Waiting for analysis"
@@ -242,13 +292,18 @@ function Dashboard({ onLogout }) {
                 : "No music selected"}
             </p>
 
-            <button onClick={handleAnalyzeMusic}>
-              Predict Mood
+            <button
+              onClick={handleAnalyzeMusic}
+              disabled={loading}
+            >
+              {loading ? "Analyzing..." : "Predict Mood"}
             </button>
 
             <div className="result-box">
 
-              <h3>Mood: {mood}</h3>
+              <h3>
+                Mood: {mood}
+              </h3>
 
               <p>
                 Confidence: {confidence}
@@ -260,7 +315,9 @@ function Dashboard({ onLogout }) {
 
             </div>
 
-            <button onClick={() => setActiveSection("dashboard")}>
+            <button
+              onClick={() => setActiveSection("dashboard")}
+            >
               ← Back to Dashboard
             </button>
 
@@ -283,7 +340,9 @@ function Dashboard({ onLogout }) {
               <span>😌 Calm — 91%</span>
             </div>
 
-            <button onClick={() => setActiveSection("dashboard")}>
+            <button
+              onClick={() => setActiveSection("dashboard")}
+            >
               ← Back to Dashboard
             </button>
 
@@ -324,7 +383,9 @@ function Dashboard({ onLogout }) {
 
             </div>
 
-            <button onClick={() => setActiveSection("dashboard")}>
+            <button
+              onClick={() => setActiveSection("dashboard")}
+            >
               ← Back to Dashboard
             </button>
 
@@ -369,7 +430,9 @@ function Dashboard({ onLogout }) {
               <p>{feedbackMessage}</p>
             )}
 
-            <button onClick={() => setActiveSection("dashboard")}>
+            <button
+              onClick={() => setActiveSection("dashboard")}
+            >
               ← Back to Dashboard
             </button>
 

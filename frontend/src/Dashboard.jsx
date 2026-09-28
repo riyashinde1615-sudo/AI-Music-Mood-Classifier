@@ -31,7 +31,7 @@ function Dashboard({ onLogout }) {
     }
   };
 
-  // Analyze Music using Render FastAPI Backend
+  // Analyze Music using FastAPI Backend
   const handleAnalyzeMusic = async () => {
     if (!songName) {
       alert("Please upload music first.");
@@ -61,6 +61,12 @@ function Dashboard({ onLogout }) {
         setMood("⚡ Energetic");
       } else if (data.mood === "Angry") {
         setMood("😡 Angry");
+      } else if (data.mood === "Romantic") {
+        setMood("💕 Romantic");
+      } else if (data.mood === "Fearful") {
+        setMood("😨 Fearful");
+      } else if (data.mood === "Relaxed") {
+        setMood("😴 Relaxed");
       } else {
         setMood(data.mood);
       }
@@ -86,6 +92,14 @@ function Dashboard({ onLogout }) {
     const text = lyrics.toLowerCase();
 
     if (
+      text.includes("love") ||
+      text.includes("heart") ||
+      text.includes("kiss") ||
+      text.includes("romantic")
+    ) {
+      setLyricsMood("💕 Romantic");
+      setLyricsConfidence("95%");
+    } else if (
       text.includes("sad") ||
       text.includes("cry") ||
       text.includes("tears") ||
@@ -117,9 +131,33 @@ function Dashboard({ onLogout }) {
     ) {
       setLyricsMood("⚡ Energetic");
       setLyricsConfidence("92%");
-    } else {
+    } else if (
+      text.includes("fear") ||
+      text.includes("scared") ||
+      text.includes("dark") ||
+      text.includes("danger")
+    ) {
+      setLyricsMood("😨 Fearful");
+      setLyricsConfidence("89%");
+    } else if (
+      text.includes("relaxed") ||
+      text.includes("sleep") ||
+      text.includes("peaceful") ||
+      text.includes("rest")
+    ) {
+      setLyricsMood("😴 Relaxed");
+      setLyricsConfidence("94%");
+    } else if (
+      text.includes("happy") ||
+      text.includes("joy") ||
+      text.includes("smile") ||
+      text.includes("fun")
+    ) {
       setLyricsMood("😊 Happy");
       setLyricsConfidence("94%");
+    } else {
+      setLyricsMood("😊 Happy");
+      setLyricsConfidence("80%");
     }
   };
 
@@ -196,65 +234,47 @@ function Dashboard({ onLogout }) {
 
               <div className="feature-card">
                 <h3>😊 Mood Detection</h3>
-                <p>
-                  Identifies the overall emotional mood of your music.
-                </p>
+                <p>Identifies the overall emotional mood of your music.</p>
                 <strong>{mood}</strong>
               </div>
 
               <div className="feature-card">
                 <h3>🎯 Confidence Score</h3>
-                <p>
-                  Shows how confident the AI model is in its prediction.
-                </p>
+                <p>Shows how confident the AI model is in its prediction.</p>
                 <strong>{confidence}</strong>
               </div>
 
               <div className="feature-card">
                 <h3>📈 Mood Timeline</h3>
-                <p>
-                  Shows how the emotional mood changes throughout the song.
-                </p>
+                <p>Shows how the emotional mood changes throughout the song.</p>
               </div>
 
               <div className="feature-card">
                 <h3>🔄 Mood Transition</h3>
-                <p>
-                  Displays changes between different moods during the song.
-                </p>
+                <p>Displays changes between different moods during the song.</p>
                 <strong>Happy → Calm → Energetic</strong>
               </div>
 
               <div className="feature-card">
                 <h3>🎯 Mood Intensity</h3>
-                <p>
-                  Measures whether the detected mood is Low, Medium or High.
-                </p>
+                <p>Measures whether the detected mood is Low, Medium or High.</p>
                 <strong>{intensity}</strong>
               </div>
 
               <div className="feature-card">
                 <h3>🎵 Song Information</h3>
-                <p>
-                  Displays basic information about the uploaded music file.
-                </p>
-                <strong>
-                  {songName || "No song selected"}
-                </strong>
+                <p>Displays basic information about the uploaded music file.</p>
+                <strong>{songName || "No song selected"}</strong>
               </div>
 
               <div className="feature-card">
                 <h3>🎼 Audio Analysis</h3>
-                <p>
-                  Analyzes audio characteristics such as energy and tempo.
-                </p>
+                <p>Analyzes audio characteristics such as energy and tempo.</p>
               </div>
 
               <div className="feature-card">
                 <h3>⚖️ Mood Summary</h3>
-                <p>
-                  Provides a short summary of the complete mood analysis.
-                </p>
+                <p>Provides a short summary of the complete mood analysis.</p>
                 <strong>
                   {mood === "Waiting"
                     ? "Waiting for analysis"
@@ -293,17 +313,11 @@ function Dashboard({ onLogout }) {
 
             <div className="result-box">
 
-              <h3>
-                Mood: {mood}
-              </h3>
+              <h3>Mood: {mood}</h3>
 
-              <p>
-                Confidence: {confidence}
-              </p>
+              <p>Confidence: {confidence}</p>
 
-              <p>
-                Intensity: {intensity}
-              </p>
+              <p>Intensity: {intensity}</p>
 
             </div>
 
@@ -365,13 +379,9 @@ function Dashboard({ onLogout }) {
 
             <div className="result-box">
 
-              <h3>
-                Mood: {lyricsMood}
-              </h3>
+              <h3>Mood: {lyricsMood}</h3>
 
-              <p>
-                Confidence: {lyricsConfidence}
-              </p>
+              <p>Confidence: {lyricsConfidence}</p>
 
             </div>
 

@@ -4,6 +4,7 @@ function Dashboard({ onLogout }) {
   const [activeSection, setActiveSection] = useState("dashboard");
 
   const [songName, setSongName] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
   const [lyrics, setLyrics] = useState("");
 
   const [mood, setMood] = useState("Waiting");
@@ -18,22 +19,30 @@ function Dashboard({ onLogout }) {
   const [feedbackMessage, setFeedbackMessage] = useState("");
 
   const [loading, setLoading] = useState(false);
+  const [lyricsLoading, setLyricsLoading] = useState(false);
 
-  // Upload Music
+  const API_URL =
+    "https://ai-music-mood-classifier-fx95.onrender.com";
+
+  // ---------------- MUSIC UPLOAD ----------------
+
   const handleUpload = (event) => {
     const file = event.target.files[0];
 
     if (file) {
+      setSelectedFile(file);
       setSongName(file.name);
+
       setMood("Waiting");
       setConfidence("-- %");
       setIntensity("--");
     }
   };
 
-  // Analyze Music using FastAPI Backend
+  // ---------------- MUSIC ANALYSIS ----------------
+
   const handleAnalyzeMusic = async () => {
-    if (!songName) {
+    if (!selectedFile) {
       alert("Please upload music first.");
       return;
     }
@@ -41,8 +50,16 @@ function Dashboard({ onLogout }) {
     setLoading(true);
 
     try {
+      const formData = new FormData();
+
+      formData.append("file", selectedFile);
+
       const response = await fetch(
-        "https://ai-music-mood-classifier-fx95.onrender.com/predict"
+        `${API_URL}/predict`,
+        {
+          method: "POST",
+          body: formData,
+        }
       );
 
       if (!response.ok) {
@@ -82,86 +99,68 @@ function Dashboard({ onLogout }) {
     setLoading(false);
   };
 
-  // Analyze Lyrics
-  const handleAnalyzeLyrics = () => {
+  // ---------------- LYRICS ANALYSIS ----------------
+
+  const handleAnalyzeLyrics = async () => {
     if (!lyrics.trim()) {
       alert("Please enter lyrics first.");
       return;
     }
 
-    const text = lyrics.toLowerCase();
+    setLyricsLoading(true);
 
-    if (
-      text.includes("love") ||
-      text.includes("heart") ||
-      text.includes("kiss") ||
-      text.includes("romantic")
-    ) {
-      setLyricsMood("💕 Romantic");
-      setLyricsConfidence("95%");
-    } else if (
-      text.includes("sad") ||
-      text.includes("cry") ||
-      text.includes("tears") ||
-      text.includes("alone")
-    ) {
-      setLyricsMood("😢 Sad");
-      setLyricsConfidence("91%");
-    } else if (
-      text.includes("calm") ||
-      text.includes("peace") ||
-      text.includes("relax") ||
-      text.includes("quiet")
-    ) {
-      setLyricsMood("😌 Calm");
-      setLyricsConfidence("93%");
-    } else if (
-      text.includes("angry") ||
-      text.includes("hate") ||
-      text.includes("fight") ||
-      text.includes("rage")
-    ) {
-      setLyricsMood("😡 Angry");
-      setLyricsConfidence("90%");
-    } else if (
-      text.includes("energy") ||
-      text.includes("dance") ||
-      text.includes("run") ||
-      text.includes("power")
-    ) {
-      setLyricsMood("⚡ Energetic");
-      setLyricsConfidence("92%");
-    } else if (
-      text.includes("fear") ||
-      text.includes("scared") ||
-      text.includes("dark") ||
-      text.includes("danger")
-    ) {
-      setLyricsMood("😨 Fearful");
-      setLyricsConfidence("89%");
-    } else if (
-      text.includes("relaxed") ||
-      text.includes("sleep") ||
-      text.includes("peaceful") ||
-      text.includes("rest")
-    ) {
-      setLyricsMood("😴 Relaxed");
-      setLyricsConfidence("94%");
-    } else if (
-      text.includes("happy") ||
-      text.includes("joy") ||
-      text.includes("smile") ||
-      text.includes("fun")
-    ) {
-      setLyricsMood("😊 Happy");
-      setLyricsConfidence("94%");
-    } else {
-      setLyricsMood("😊 Happy");
-      setLyricsConfidence("80%");
+    try {
+      const response = await fetch(
+        `${API_URL}/predict-lyrics`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            lyrics: lyrics,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Backend error");
+      }
+
+      const data = await response.json();
+
+      if (data.mood === "Happy") {
+        setLyricsMood("😊 Happy");
+      } else if (data.mood === "Sad") {
+        setLyricsMood("😢 Sad");
+      } else if (data.mood === "Calm") {
+        setLyricsMood("😌 Calm");
+      } else if (data.mood === "Energetic") {
+        setLyricsMood("⚡ Energetic");
+      } else if (data.mood === "Angry") {
+        setLyricsMood("😡 Angry");
+      } else if (data.mood === "Romantic") {
+        setLyricsMood("💕 Romantic");
+      } else if (data.mood === "Fearful") {
+        setLyricsMood("😨 Fearful");
+      } else if (data.mood === "Relaxed") {
+        setLyricsMood("😴 Relaxed");
+      } else {
+        setLyricsMood(data.mood);
+      }
+
+      setLyricsConfidence(`${data.confidence}%`);
+
+    } catch (error) {
+      console.error(error);
+      alert("Cannot connect to FastAPI backend.");
     }
+
+    setLyricsLoading(false);
   };
 
-  // Feedback
+  // ---------------- FEEDBACK ----------------
+
   const handleFeedback = () => {
     if (rating === 0) {
       alert("Please select a rating.");
@@ -185,27 +184,38 @@ function Dashboard({ onLogout }) {
     <div className="dashboard">
 
       {/* SIDEBAR */}
+
       <aside className="sidebar">
 
         <h2>🎵 AI Mood</h2>
 
-        <button onClick={() => setActiveSection("dashboard")}>
+        <button
+          onClick={() => setActiveSection("dashboard")}
+        >
           🏠 Dashboard
         </button>
 
-        <button onClick={() => setActiveSection("analyze")}>
+        <button
+          onClick={() => setActiveSection("analyze")}
+        >
           🎧 Analyze Music
         </button>
 
-        <button onClick={() => setActiveSection("history")}>
+        <button
+          onClick={() => setActiveSection("history")}
+        >
           📜 Prediction History
         </button>
 
-        <button onClick={() => setActiveSection("lyrics")}>
+        <button
+          onClick={() => setActiveSection("lyrics")}
+        >
           📝 Lyrics Analysis
         </button>
 
-        <button onClick={() => setActiveSection("feedback")}>
+        <button
+          onClick={() => setActiveSection("feedback")}
+        >
           💬 Feedback
         </button>
 
@@ -218,10 +228,13 @@ function Dashboard({ onLogout }) {
 
       </aside>
 
+
       {/* MAIN CONTENT */}
+
       <main className="main-content">
 
         {/* DASHBOARD */}
+
         {activeSection === "dashboard" && (
           <>
             <h1>AI Music Mood Classifier</h1>
@@ -234,47 +247,66 @@ function Dashboard({ onLogout }) {
 
               <div className="feature-card">
                 <h3>😊 Mood Detection</h3>
-                <p>Identifies the overall emotional mood of your music.</p>
+                <p>
+                  Identifies the overall emotional mood of your music.
+                </p>
                 <strong>{mood}</strong>
               </div>
 
               <div className="feature-card">
                 <h3>🎯 Confidence Score</h3>
-                <p>Shows how confident the AI model is in its prediction.</p>
+                <p>
+                  Shows how confident the AI model is in its prediction.
+                </p>
                 <strong>{confidence}</strong>
               </div>
 
               <div className="feature-card">
                 <h3>📈 Mood Timeline</h3>
-                <p>Shows how the emotional mood changes throughout the song.</p>
+                <p>
+                  Shows how the emotional mood changes throughout the song.
+                </p>
               </div>
 
               <div className="feature-card">
                 <h3>🔄 Mood Transition</h3>
-                <p>Displays changes between different moods during the song.</p>
+                <p>
+                  Displays changes between different moods during the song.
+                </p>
                 <strong>Happy → Calm → Energetic</strong>
               </div>
 
               <div className="feature-card">
                 <h3>🎯 Mood Intensity</h3>
-                <p>Measures whether the detected mood is Low, Medium or High.</p>
+                <p>
+                  Measures whether the detected mood is Low, Medium or High.
+                </p>
                 <strong>{intensity}</strong>
               </div>
 
               <div className="feature-card">
                 <h3>🎵 Song Information</h3>
-                <p>Displays basic information about the uploaded music file.</p>
-                <strong>{songName || "No song selected"}</strong>
+                <p>
+                  Displays information about the uploaded music file.
+                </p>
+                <strong>
+                  {songName || "No song selected"}
+                </strong>
               </div>
 
               <div className="feature-card">
                 <h3>🎼 Audio Analysis</h3>
-                <p>Analyzes audio characteristics such as energy and tempo.</p>
+                <p>
+                  Analyzes audio characteristics such as energy and tempo.
+                </p>
               </div>
 
               <div className="feature-card">
                 <h3>⚖️ Mood Summary</h3>
-                <p>Provides a short summary of the complete mood analysis.</p>
+                <p>
+                  Provides a short summary of the complete mood analysis.
+                </p>
+
                 <strong>
                   {mood === "Waiting"
                     ? "Waiting for analysis"
@@ -286,7 +318,9 @@ function Dashboard({ onLogout }) {
           </>
         )}
 
+
         {/* ANALYZE MUSIC */}
+
         {activeSection === "analyze" && (
           <section className="section-card">
 
@@ -308,16 +342,22 @@ function Dashboard({ onLogout }) {
               onClick={handleAnalyzeMusic}
               disabled={loading}
             >
-              {loading ? "Analyzing..." : "Predict Mood"}
+              {loading
+                ? "Analyzing..."
+                : "Predict Mood"}
             </button>
 
             <div className="result-box">
 
               <h3>Mood: {mood}</h3>
 
-              <p>Confidence: {confidence}</p>
+              <p>
+                Confidence: {confidence}
+              </p>
 
-              <p>Intensity: {intensity}</p>
+              <p>
+                Intensity: {intensity}
+              </p>
 
             </div>
 
@@ -330,7 +370,9 @@ function Dashboard({ onLogout }) {
           </section>
         )}
 
+
         {/* HISTORY */}
+
         {activeSection === "history" && (
           <section className="section-card">
 
@@ -355,7 +397,9 @@ function Dashboard({ onLogout }) {
           </section>
         )}
 
-        {/* LYRICS */}
+
+        {/* LYRICS ANALYSIS */}
+
         {activeSection === "lyrics" && (
           <section className="section-card">
 
@@ -363,25 +407,36 @@ function Dashboard({ onLogout }) {
 
             <p>
               Enter your song lyrics and the system will analyze
-              the emotional mood.
+              the emotional mood using AI.
             </p>
 
             <textarea
               rows="8"
               placeholder="Type or paste your song lyrics here..."
               value={lyrics}
-              onChange={(e) => setLyrics(e.target.value)}
+              onChange={(e) =>
+                setLyrics(e.target.value)
+              }
             />
 
-            <button onClick={handleAnalyzeLyrics}>
-              Analyze Lyrics
+            <button
+              onClick={handleAnalyzeLyrics}
+              disabled={lyricsLoading}
+            >
+              {lyricsLoading
+                ? "Analyzing..."
+                : "Analyze Lyrics"}
             </button>
 
             <div className="result-box">
 
-              <h3>Mood: {lyricsMood}</h3>
+              <h3>
+                Mood: {lyricsMood}
+              </h3>
 
-              <p>Confidence: {lyricsConfidence}</p>
+              <p>
+                Confidence: {lyricsConfidence}
+              </p>
 
             </div>
 
@@ -394,25 +449,34 @@ function Dashboard({ onLogout }) {
           </section>
         )}
 
+
         {/* FEEDBACK */}
+
         {activeSection === "feedback" && (
           <section className="section-card">
 
             <h2>💬 Feedback</h2>
 
             <p>
-              Tell us about your experience with the AI Music Mood Classifier.
+              Tell us about your experience with
+              the AI Music Mood Classifier.
             </p>
 
             <div className="stars">
 
               {[1, 2, 3, 4, 5].map((star) => (
+
                 <button
                   key={star}
-                  onClick={() => setRating(star)}
+                  onClick={() =>
+                    setRating(star)
+                  }
                 >
-                  {star <= rating ? "⭐" : "☆"}
+                  {star <= rating
+                    ? "⭐"
+                    : "☆"}
                 </button>
+
               ))}
 
             </div>
@@ -421,10 +485,14 @@ function Dashboard({ onLogout }) {
               rows="5"
               placeholder="Write your feedback..."
               value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
+              onChange={(e) =>
+                setFeedback(e.target.value)
+              }
             />
 
-            <button onClick={handleFeedback}>
+            <button
+              onClick={handleFeedback}
+            >
               Submit Feedback
             </button>
 
@@ -433,7 +501,9 @@ function Dashboard({ onLogout }) {
             )}
 
             <button
-              onClick={() => setActiveSection("dashboard")}
+              onClick={() =>
+                setActiveSection("dashboard")
+              }
             >
               ← Back to Dashboard
             </button>

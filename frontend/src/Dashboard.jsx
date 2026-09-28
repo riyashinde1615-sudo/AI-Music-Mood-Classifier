@@ -19,6 +19,7 @@ function Dashboard({ onLogout }) {
 
   const [loading, setLoading] = useState(false);
 
+  // Upload Music
   const handleUpload = (event) => {
     const file = event.target.files[0];
 
@@ -30,6 +31,7 @@ function Dashboard({ onLogout }) {
     }
   };
 
+  // Analyze Music using Render FastAPI Backend
   const handleAnalyzeMusic = async () => {
     if (!songName) {
       alert("Please upload music first.");
@@ -39,7 +41,9 @@ function Dashboard({ onLogout }) {
     setLoading(true);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/predict");
+      const response = await fetch(
+        "https://ai-music-mood-classifier-fx95.onrender.com/predict"
+      );
 
       if (!response.ok) {
         throw new Error("Backend error");
@@ -72,6 +76,7 @@ function Dashboard({ onLogout }) {
     setLoading(false);
   };
 
+  // Analyze Lyrics
   const handleAnalyzeLyrics = () => {
     if (!lyrics.trim()) {
       alert("Please enter lyrics first.");
@@ -118,6 +123,7 @@ function Dashboard({ onLogout }) {
     }
   };
 
+  // Feedback
   const handleFeedback = () => {
     if (rating === 0) {
       alert("Please select a rating.");
@@ -190,27 +196,22 @@ function Dashboard({ onLogout }) {
 
               <div className="feature-card">
                 <h3>😊 Mood Detection</h3>
-
                 <p>
                   Identifies the overall emotional mood of your music.
                 </p>
-
                 <strong>{mood}</strong>
               </div>
 
               <div className="feature-card">
                 <h3>🎯 Confidence Score</h3>
-
                 <p>
                   Shows how confident the AI model is in its prediction.
                 </p>
-
                 <strong>{confidence}</strong>
               </div>
 
               <div className="feature-card">
                 <h3>📈 Mood Timeline</h3>
-
                 <p>
                   Shows how the emotional mood changes throughout the song.
                 </p>
@@ -218,31 +219,25 @@ function Dashboard({ onLogout }) {
 
               <div className="feature-card">
                 <h3>🔄 Mood Transition</h3>
-
                 <p>
                   Displays changes between different moods during the song.
                 </p>
-
                 <strong>Happy → Calm → Energetic</strong>
               </div>
 
               <div className="feature-card">
                 <h3>🎯 Mood Intensity</h3>
-
                 <p>
                   Measures whether the detected mood is Low, Medium or High.
                 </p>
-
                 <strong>{intensity}</strong>
               </div>
 
               <div className="feature-card">
                 <h3>🎵 Song Information</h3>
-
                 <p>
                   Displays basic information about the uploaded music file.
                 </p>
-
                 <strong>
                   {songName || "No song selected"}
                 </strong>
@@ -250,7 +245,6 @@ function Dashboard({ onLogout }) {
 
               <div className="feature-card">
                 <h3>🎼 Audio Analysis</h3>
-
                 <p>
                   Analyzes audio characteristics such as energy and tempo.
                 </p>
@@ -258,11 +252,9 @@ function Dashboard({ onLogout }) {
 
               <div className="feature-card">
                 <h3>⚖️ Mood Summary</h3>
-
                 <p>
                   Provides a short summary of the complete mood analysis.
                 </p>
-
                 <strong>
                   {mood === "Waiting"
                     ? "Waiting for analysis"

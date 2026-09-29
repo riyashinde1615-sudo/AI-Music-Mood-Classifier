@@ -3,3 +3,4 @@ dist
 .vercel
 __pycache__
 *.pyc
+node-backend/music_mood.db

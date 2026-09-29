@@ -22,7 +22,7 @@ function Dashboard({ onLogout }) {
   const [lyricsLoading, setLyricsLoading] = useState(false);
 
   const API_URL =
-    "https://ai-music-mood-classifier-fx95.onrender.com";
+    "https://ai-music-mood-classifier-2-q0hb.onrender.com";
 
   // ---------------- MUSIC UPLOAD ----------------
 

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function Dashboard({ onLogout }) {
+function Dashboard({ user, onLogout }) {
   const [activeSection, setActiveSection] = useState("dashboard");
 
   const [songName, setSongName] = useState("");
@@ -18,11 +18,33 @@ function Dashboard({ onLogout }) {
   const [feedback, setFeedback] = useState("");
   const [feedbackMessage, setFeedbackMessage] = useState("");
 
+  const [history, setHistory] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [lyricsLoading, setLyricsLoading] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   const API_URL =
     "https://ai-music-mood-classifier-2-q0hb.onrender.com";
+
+  // ---------------- USER ----------------
+
+  const userId = user?.id || null;
+
+  // ---------------- MOOD EMOJI ----------------
+
+  const getMoodEmoji = (moodName) => {
+    if (moodName === "Happy") return "😊 Happy";
+    if (moodName === "Sad") return "😢 Sad";
+    if (moodName === "Calm") return "😌 Calm";
+    if (moodName === "Energetic") return "⚡ Energetic";
+    if (moodName === "Angry") return "😡 Angry";
+    if (moodName === "Romantic") return "💕 Romantic";
+    if (moodName === "Fearful") return "😨 Fearful";
+    if (moodName === "Relaxed") return "😴 Relaxed";
+
+    return moodName;
+  };
 
   // ---------------- MUSIC UPLOAD ----------------
 
@@ -54,6 +76,10 @@ function Dashboard({ onLogout }) {
 
       formData.append("file", selectedFile);
 
+      if (userId) {
+        formData.append("user_id", userId);
+      }
+
       const response = await fetch(
         `${API_URL}/predict`,
         {
@@ -68,32 +94,15 @@ function Dashboard({ onLogout }) {
 
       const data = await response.json();
 
-      if (data.mood === "Happy") {
-        setMood("😊 Happy");
-      } else if (data.mood === "Sad") {
-        setMood("😢 Sad");
-      } else if (data.mood === "Calm") {
-        setMood("😌 Calm");
-      } else if (data.mood === "Energetic") {
-        setMood("⚡ Energetic");
-      } else if (data.mood === "Angry") {
-        setMood("😡 Angry");
-      } else if (data.mood === "Romantic") {
-        setMood("💕 Romantic");
-      } else if (data.mood === "Fearful") {
-        setMood("😨 Fearful");
-      } else if (data.mood === "Relaxed") {
-        setMood("😴 Relaxed");
-      } else {
-        setMood(data.mood);
-      }
-
+      setMood(getMoodEmoji(data.mood));
       setConfidence(`${data.confidence}%`);
       setIntensity(data.intensity);
 
+      alert("Music analysis completed!");
+
     } catch (error) {
       console.error(error);
-      alert("Cannot connect to FastAPI backend.");
+      alert("Cannot connect to backend.");
     }
 
     setLoading(false);
@@ -119,6 +128,7 @@ function Dashboard({ onLogout }) {
           },
           body: JSON.stringify({
             lyrics: lyrics,
+            user_id: userId,
           }),
         }
       );
@@ -129,39 +139,58 @@ function Dashboard({ onLogout }) {
 
       const data = await response.json();
 
-      if (data.mood === "Happy") {
-        setLyricsMood("😊 Happy");
-      } else if (data.mood === "Sad") {
-        setLyricsMood("😢 Sad");
-      } else if (data.mood === "Calm") {
-        setLyricsMood("😌 Calm");
-      } else if (data.mood === "Energetic") {
-        setLyricsMood("⚡ Energetic");
-      } else if (data.mood === "Angry") {
-        setLyricsMood("😡 Angry");
-      } else if (data.mood === "Romantic") {
-        setLyricsMood("💕 Romantic");
-      } else if (data.mood === "Fearful") {
-        setLyricsMood("😨 Fearful");
-      } else if (data.mood === "Relaxed") {
-        setLyricsMood("😴 Relaxed");
-      } else {
-        setLyricsMood(data.mood);
-      }
-
+      setLyricsMood(getMoodEmoji(data.mood));
       setLyricsConfidence(`${data.confidence}%`);
+
+      alert("Lyrics analysis completed!");
 
     } catch (error) {
       console.error(error);
-      alert("Cannot connect to FastAPI backend.");
+      alert("Cannot connect to backend.");
     }
 
     setLyricsLoading(false);
   };
 
+  // ---------------- HISTORY ----------------
+
+  const loadHistory = async () => {
+    if (!userId) {
+      alert("User information not found.");
+      return;
+    }
+
+    setHistoryLoading(true);
+
+    try {
+      const response = await fetch(
+        `${API_URL}/history/${userId}`
+      );
+
+      if (!response.ok) {
+        throw new Error("History error");
+      }
+
+      const data = await response.json();
+
+      setHistory(data.history || []);
+
+    } catch (error) {
+      console.error(error);
+      alert("Cannot load prediction history.");
+    }
+
+    setHistoryLoading(false);
+  };
+
+  const openHistory = () => {
+    setActiveSection("history");
+    loadHistory();
+  };
+
   // ---------------- FEEDBACK ----------------
 
-  const handleFeedback = () => {
+  const handleFeedback = async () => {
     if (rating === 0) {
       alert("Please select a rating.");
       return;
@@ -172,12 +201,40 @@ function Dashboard({ onLogout }) {
       return;
     }
 
-    setFeedbackMessage(
-      "✅ Thank you! Your feedback has been submitted."
-    );
+    try {
+      const response = await fetch(
+        `${API_URL}/feedback`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            message: feedback,
+            rating: rating,
+          }),
+        }
+      );
 
-    setFeedback("");
-    setRating(0);
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || "Feedback failed.");
+        return;
+      }
+
+      setFeedbackMessage(
+        "✅ Thank you! Your feedback has been submitted."
+      );
+
+      setFeedback("");
+      setRating(0);
+
+    } catch (error) {
+      console.error(error);
+      alert("Cannot connect to backend.");
+    }
   };
 
   return (
@@ -202,7 +259,7 @@ function Dashboard({ onLogout }) {
         </button>
 
         <button
-          onClick={() => setActiveSection("history")}
+          onClick={openHistory}
         >
           📜 Prediction History
         </button>
@@ -238,6 +295,10 @@ function Dashboard({ onLogout }) {
         {activeSection === "dashboard" && (
           <>
             <h1>AI Music Mood Classifier</h1>
+
+            <p>
+              Welcome, {user?.name || "User"} 👋
+            </p>
 
             <p>
               Analyze your music and discover its emotional mood using AI.
@@ -378,15 +439,32 @@ function Dashboard({ onLogout }) {
 
             <h2>📜 Prediction History</h2>
 
-            <div className="history-item">
-              <strong>Sample Song</strong>
-              <span>😊 Happy — 94%</span>
-            </div>
+            {historyLoading ? (
+              <p>Loading history...</p>
+            ) : history.length === 0 ? (
+              <p>No prediction history found.</p>
+            ) : (
+              history.map((item) => (
+                <div
+                  className="history-item"
+                  key={item.id}
+                >
+                  <strong>
+                    {item.filename ||
+                      "Lyrics Analysis"}
+                  </strong>
 
-            <div className="history-item">
-              <strong>Sample Music</strong>
-              <span>😌 Calm — 91%</span>
-            </div>
+                  <span>
+                    {getMoodEmoji(item.mood)} —{" "}
+                    {item.confidence}%
+                  </span>
+
+                  <small>
+                    Intensity: {item.intensity}
+                  </small>
+                </div>
+              ))
+            )}
 
             <button
               onClick={() => setActiveSection("dashboard")}

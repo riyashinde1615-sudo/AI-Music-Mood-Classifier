@@ -1,3 +1,9 @@
+const OpenAI = require("openai");
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
@@ -180,60 +186,86 @@ app.post("/login", (req, res) => {
 // LYRICS PREDICTION
 // ==========================
 
-app.post("/predict-lyrics", async (req, res) => {
+// ==========================
+// LYRICS PREDICTION
+// ==========================
 
+app.post("/predict-lyrics", async (req, res) => {
   try {
+    const { lyrics, user_id } = req.body;
+
+    if (!lyrics || !lyrics.trim()) {
+      return res.status(400).json({
+        error: "Lyrics are required"
+      });
+    }
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      temperature: 0,
+      response_format: {
+        type: "json_object"
+      },
+      messages: [
+        {
+          role: "system",
+          content: `
+You are an AI music mood classifier.
+
+Analyze the given song lyrics and return JSON only.
+
+Allowed moods:
+Happy, Sad, Calm, Energetic, Angry, Romantic, Fearful, Relaxed
+
+Return exactly:
+{
+  "mood": "one allowed mood",
+  "confidence": number,
+  "intensity": "Low, Medium, or High",
+  "reason": "short explanation"
+}
+`
+        },
+        {
+          role: "user",
+          content: lyrics
+        }
+      ]
+    });
+
+    const result = JSON.parse(
+      completion.choices[0].message.content
+    );
 
     const db = getDatabase();
 
-    const response = await fetch(
-      `${FASTAPI_URL}/predict-lyrics`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(req.body)
-      }
-    );
+    const stmt = db.prepare(`
+      INSERT INTO predictions
+      (user_id, filename, lyrics, mood, confidence, intensity)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
 
-    const data = await response.json();
+    stmt.run([
+      user_id || null,
+      null,
+      lyrics,
+      result.mood,
+      result.confidence || 0,
+      result.intensity || "Medium"
+    ]);
 
-    // Save prediction
-    if (data.mood) {
+    stmt.free();
+    saveDatabase();
 
-      const stmt = db.prepare(`
-        INSERT INTO predictions
-        (user_id, filename, lyrics, mood, confidence, intensity)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `);
-
-      stmt.run([
-        req.body.user_id || null,
-        null,
-        req.body.lyrics || "",
-        data.mood,
-        data.confidence || 0,
-        data.intensity || "Medium"
-      ]);
-
-      stmt.free();
-
-      saveDatabase();
-    }
-
-    res.status(response.status).json(data);
+    res.json(result);
 
   } catch (error) {
-
-    console.error(error);
+    console.error("OpenAI Lyrics Error:", error);
 
     res.status(500).json({
-      error: "Cannot connect to FastAPI backend"
+      error: "Lyrics analysis failed"
     });
-
   }
-
 });
 
 

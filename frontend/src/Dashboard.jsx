@@ -87,63 +87,64 @@ function Dashboard({ user, onLogout }) {
     }
   };
 
-  const handleAnalyzeLyrics = async () => {
-    if (!lyrics.trim()) {
-      alert("Please enter lyrics first.");
-      return;
-    }
+const handleAnalyzeLyrics = async () => {
+  if (!lyrics.trim()) {
+    alert("Please enter lyrics first.");
+    return;
+  }
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const response = await fetch(
-        `${API_URL}/predict-lyrics`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            lyrics: lyrics,
-            user_id: user?.id || 1,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail || "Lyrics prediction failed");
+    const response = await fetch(
+      `${API_URL}/predict-lyrics`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          lyrics: lyrics,
+          user_id: user?.id || 1,
+        }),
       }
+    );
 
-      setLyricsMood(data.mood || "Happy");
+    const data = await response.json();
 
-      setLyricsConfidence(
-        data.confidence !== undefined
-          ? `${data.confidence}%`
-          : "94%"
-      );
-
-      setMood(data.mood || "Happy");
-
-      setConfidence(
-        data.confidence !== undefined
-          ? `${data.confidence}%`
-          : "94%"
-      );
-
-      setIntensity(data.intensity || "High");
-
-      await loadHistory();
-
-      alert("Lyrics analyzed successfully!");
-    } catch (error) {
-      console.error(error);
-      alert("Lyrics analysis failed.");
-    } finally {
-      setLoading(false);
+    if (!response.ok) {
+      throw new Error(data.error || "Lyrics prediction failed");
     }
-  };
+
+    setLyricsMood(data.mood || "Unknown");
+
+    setLyricsConfidence(
+      data.confidence !== undefined
+        ? `${data.confidence}%`
+        : "-- %"
+    );
+
+    setMood(data.mood || "Waiting");
+
+    setConfidence(
+      data.confidence !== undefined
+        ? `${data.confidence}%`
+        : "-- %"
+    );
+
+    setIntensity(data.intensity || "--");
+
+    alert(
+      `Mood: ${data.mood}\nConfidence: ${data.confidence}%\nIntensity: ${data.intensity}`
+    );
+
+  } catch (error) {
+    console.error("Lyrics analysis error:", error);
+    alert("Unable to analyze lyrics. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const loadHistory = async () => {
     if (!user?.id) {

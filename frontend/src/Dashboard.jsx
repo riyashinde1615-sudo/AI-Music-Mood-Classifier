@@ -537,64 +537,109 @@ setHistory(Array.isArray(data.history) ? data.history : []);
     </div>
   );
 
-  const renderHistory = () => (
-    <div className="page-card">
-      <h1>🕘 Prediction History</h1>
+const renderHistory = () => (
+  <div className="page-card history-page">
 
-      <p>
-        View your previous mood predictions.
-      </p>
+    <div className="history-header">
+      <div>
+        <h1>🕘 Prediction History</h1>
+        <p>
+          View your previous music and lyrics mood predictions.
+        </p>
+      </div>
 
-      {historyLoading ? (
+      <div className="history-count">
+        <span>{history.length}</span>
+        <small>Predictions</small>
+      </div>
+    </div>
+
+    {historyLoading ? (
+      <div className="empty-history">
+        <div>⏳</div>
         <h3>Loading history...</h3>
-      ) : history.length === 0 ? (
-        <div className="empty-history">
-          <div>🎵</div>
+        <p>Please wait while we load your predictions.</p>
+      </div>
 
-          <h3>No prediction history yet.</h3>
+    ) : history.length === 0 ? (
 
-          <p>
-            Analyze music or lyrics to create
-            prediction history.
-          </p>
-        </div>
-      ) : (
-        <div className="history-grid">
-          {history.map((item) => (
-            <div
-              className="history-card"
-              key={item.id}
-            >
+      <div className="empty-history">
+        <div>🎵</div>
+
+        <h3>No prediction history yet.</h3>
+
+        <p>
+          Analyze music or lyrics to create prediction history.
+        </p>
+      </div>
+
+    ) : (
+
+      <div className="history-grid">
+
+        {history.map((item) => (
+
+          <div
+            className="history-card"
+            key={item.id}
+          >
+
+            <div className="history-card-top">
+
               <div className="card-icon">
                 {getMoodIcon(item.mood)}
               </div>
 
-              <h3>{item.mood}</h3>
+              <div>
+                <span className="history-label">
+                  DETECTED MOOD
+                </span>
 
-              <p>
-                Confidence:{" "}
-                <strong>
-                  {item.confidence}%
-                </strong>
-              </p>
+                <h3>{item.mood}</h3>
+              </div>
 
-              <p>
-                Intensity:{" "}
-                <strong>
-                  {item.intensity}
-                </strong>
-              </p>
-
-              <small>
-                {item.created_at}
-              </small>
             </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
 
+            <div className="history-info">
+
+              <div className="history-info-box">
+                <span>🎯 Confidence</span>
+                <strong>{item.confidence}%</strong>
+              </div>
+
+              <div className="history-info-box">
+                <span>🔥 Intensity</span>
+                <strong>{item.intensity}</strong>
+              </div>
+
+            </div>
+
+            {item.lyrics && (
+              <div className="history-lyrics">
+                <span>🎤 Lyrics</span>
+
+                <p>
+                  {item.lyrics.length > 100
+                    ? item.lyrics.substring(0, 100) + "..."
+                    : item.lyrics}
+                </p>
+              </div>
+            )}
+
+            <div className="history-date">
+              📅 {item.created_at}
+            </div>
+
+          </div>
+
+        ))}
+
+      </div>
+
+    )}
+
+  </div>
+);
   const renderTimeline = () => (
     <div className="page-card timeline-page">
       <h1>📈 Mood Timeline</h1>

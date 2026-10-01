@@ -1,8 +1,3 @@
-const OpenAI = require("openai");
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
 
 const express = require("express");
 const cors = require("cors");
@@ -181,11 +176,6 @@ app.post("/login", (req, res) => {
 
 });
 
-
-// ==========================
-// LYRICS PREDICTION
-// ==========================
-
 // ==========================
 // LYRICS PREDICTION
 // ==========================
@@ -200,42 +190,100 @@ app.post("/predict-lyrics", async (req, res) => {
       });
     }
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      temperature: 0,
-      response_format: {
-        type: "json_object"
-      },
-      messages: [
-        {
-          role: "system",
-          content: `
-You are an AI music mood classifier.
+    const text = lyrics.toLowerCase();
 
-Analyze the given song lyrics and return JSON only.
+    let mood = "Happy";
+    let confidence = 80;
+    let intensity = "Medium";
+    let reason = "The lyrics have a generally positive tone.";
 
-Allowed moods:
-Happy, Sad, Calm, Energetic, Angry, Romantic, Fearful, Relaxed
+    if (
+      text.includes("love") ||
+      text.includes("heart") ||
+      text.includes("kiss") ||
+      text.includes("romantic")
+    ) {
+      mood = "Romantic";
+      confidence = 95;
+      intensity = "High";
+      reason = "The lyrics contain words related to love and romance.";
 
-Return exactly:
-{
-  "mood": "one allowed mood",
-  "confidence": number,
-  "intensity": "Low, Medium, or High",
-  "reason": "short explanation"
-}
-`
-        },
-        {
-          role: "user",
-          content: lyrics
-        }
-      ]
-    });
+    } else if (
+      text.includes("sad") ||
+      text.includes("cry") ||
+      text.includes("tears") ||
+      text.includes("alone") ||
+      text.includes("lonely")
+    ) {
+      mood = "Sad";
+      confidence = 91;
+      intensity = "High";
+      reason = "The lyrics contain words related to sadness and loneliness.";
 
-    const result = JSON.parse(
-      completion.choices[0].message.content
-    );
+    } else if (
+      text.includes("calm") ||
+      text.includes("peace") ||
+      text.includes("quiet") ||
+      text.includes("peaceful")
+    ) {
+      mood = "Calm";
+      confidence = 93;
+      intensity = "Medium";
+      reason = "The lyrics contain peaceful and calm expressions.";
+
+    } else if (
+      text.includes("angry") ||
+      text.includes("hate") ||
+      text.includes("fight") ||
+      text.includes("rage")
+    ) {
+      mood = "Angry";
+      confidence = 90;
+      intensity = "High";
+      reason = "The lyrics contain words related to anger and conflict.";
+
+    } else if (
+      text.includes("dance") ||
+      text.includes("energy") ||
+      text.includes("power") ||
+      text.includes("run")
+    ) {
+      mood = "Energetic";
+      confidence = 92;
+      intensity = "High";
+      reason = "The lyrics contain energetic and active expressions.";
+
+    } else if (
+      text.includes("fear") ||
+      text.includes("scared") ||
+      text.includes("danger") ||
+      text.includes("afraid")
+    ) {
+      mood = "Fearful";
+      confidence = 89;
+      intensity = "High";
+      reason = "The lyrics contain words related to fear and danger.";
+
+    } else if (
+      text.includes("relaxed") ||
+      text.includes("sleep") ||
+      text.includes("rest")
+    ) {
+      mood = "Relaxed";
+      confidence = 94;
+      intensity = "Low";
+      reason = "The lyrics contain words related to relaxation and rest.";
+
+    } else if (
+      text.includes("happy") ||
+      text.includes("joy") ||
+      text.includes("smile")
+    ) {
+      mood = "Happy";
+      confidence = 94;
+      intensity = "High";
+      reason = "The lyrics contain positive and happy expressions.";
+    }
 
     const db = getDatabase();
 
@@ -249,30 +297,29 @@ Return exactly:
       user_id || null,
       null,
       lyrics,
-      result.mood,
-      result.confidence || 0,
-      result.intensity || "Medium"
+      mood,
+      confidence,
+      intensity
     ]);
 
     stmt.free();
     saveDatabase();
 
-    res.json(result);
+    res.json({
+      mood,
+      confidence,
+      intensity,
+      reason
+    });
 
   } catch (error) {
-    console.error("OpenAI Lyrics Error:", error);
+    console.error("Lyrics Analysis Error:", error);
 
     res.status(500).json({
       error: "Lyrics analysis failed"
     });
   }
 });
-
-
-// ==========================
-// MUSIC PREDICTION
-// ==========================
-
 app.post(
   "/predict",
   upload.single("file"),

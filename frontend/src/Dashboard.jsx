@@ -161,7 +161,8 @@ const handleAnalyzeLyrics = async () => {
       const data = await response.json();
 
       if (response.ok) {
-        setHistory(Array.isArray(data) ? data : []);
+
+setHistory(Array.isArray(data.history) ? data.history : []);
       } else {
         setHistory([]);
       }
